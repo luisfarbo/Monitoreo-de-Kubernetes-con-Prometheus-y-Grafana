@@ -356,34 +356,7 @@ kubectl logs -f <nombre-pod> -n sock-shop-lite
 kubectl scale deployment front-end --replicas=4 -n sock-shop-lite
 ```
 
----
-
-## 👥 Autores
-
-- **[Tu Nombre]** - Infraestructura y Kubernetes
-- **[Compañero 2]** - Monitoreo y Prometheus
-- **[Compañero 3]** - Dashboards y análisis
-- **[Compañero 4]** - Aplicación y testing
-
-**Universidad**: [Tu Universidad]  
+**Universidad**: Universidad Autonoma de occidente  
 **Curso**: Computación en la Nube  
 **Fecha**: Noviembre 2025
 
----
-
-## 📚 Referencias
-
-- [Documentación Kubernetes](https://kubernetes.io/docs/)
-- [Documentación Prometheus](https://prometheus.io/docs/)
-- [Documentación Grafana](https://grafana.com/docs/)
-- [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
-
----
-
-## 📞 Contacto
-
-¿Preguntas? Abre un [issue](https://github.com/tu-usuario/repo/issues) en GitHub.
-
----
-
-**⭐ Proyecto académico - Computación en la Nube - 2025 ⭐**
