@@ -1,0 +1,70 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Configuración del cluster
+NUM_WORKER_NODES = 2
+IP_NW = "192.168.56."
+MASTER_IP_START = 10
+NODE_IP_START = 20
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/jammy64"
+  config.vm.box_check_update = false
+
+  # Configuración del MASTER NODE
+  config.vm.define "k8s-master" do |master|
+    master.vm.hostname = "k8s-master"
+    master.vm.network "private_network", ip: IP_NW + "#{MASTER_IP_START}"
+    
+    # Port forwarding para acceso desde Windows
+    master.vm.network "forwarded_port", guest: 6443, host: 6443  # API Server
+    master.vm.network "forwarded_port", guest: 3000, host: 3000  # Grafana
+    master.vm.network "forwarded_port", guest: 9090, host: 9090  # Prometheus
+    master.vm.network "forwarded_port", guest: 8080, host: 8080  # App
+    master.vm.network "forwarded_port", guest: 30080, host: 30080 # NodePort
+    
+    master.vm.provider "virtualbox" do |vb|
+      vb.name = "k8s-master"
+      vb.memory = 6144  # 4GB para el master
+      vb.cpus = 2
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    end
+    
+    master.vm.provision "shell", path: "scripts/common.sh"
+    master.vm.provision "shell", path: "scripts/master.sh"
+  end
+
+  # Configuración de WORKER NODES
+  (1..NUM_WORKER_NODES).each do |i|
+    config.vm.define "k8s-worker#{i}" do |worker|
+      worker.vm.hostname = "k8s-worker#{i}"
+      worker.vm.network "private_network", ip: IP_NW + "#{NODE_IP_START + i}"
+      
+      worker.vm.provider "virtualbox" do |vb|
+        vb.name = "k8s-worker#{i}"
+        vb.memory = 4096  # 3GB por worker
+        vb.cpus = 2
+        vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      end
+      
+      worker.vm.provision "shell", path: "scripts/common.sh"
+      worker.vm.provision "shell", path: "scripts/worker.sh"
+    end
+  end
+
+  # LOAD BALANCER NODE (opcional pero impresionante)
+  config.vm.define "k8s-loadbalancer" do |lb|
+    lb.vm.hostname = "k8s-loadbalancer"
+    lb.vm.network "private_network", ip: IP_NW + "100"
+    lb.vm.network "forwarded_port", guest: 80, host: 80
+    lb.vm.network "forwarded_port", guest: 443, host: 443
+    
+    lb.vm.provider "virtualbox" do |vb|
+      vb.name = "k8s-loadbalancer"
+      vb.memory = 1024  # 1GB suficiente para LB
+      vb.cpus = 1
+    end
+    
+    lb.vm.provision "shell", path: "scripts/loadbalancer.sh"
+  end
+end
